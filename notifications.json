@@ -6,7 +6,7 @@
     },
 
     "user_left":{
-        "message": "{member} left the conversation.",
+        "message": "{member} left the conversation",
         "emoji": ":arrow_backward:",
         "colour": "red"
     },
@@ -30,7 +30,7 @@
     },
 
     "user_undeafened":{
-        "message": "{member} uneafened themselves.",
+        "message": "{member} undeafened themselves.",
         "emoji": ":ear:",
         "colour": "green"
     },
