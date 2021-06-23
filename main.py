@@ -7,13 +7,14 @@ import json
 from datetime import datetime
 
 client = discord.Client()
+secrets = json.load(open('secrets.json'))
 BOT_PREFIX = '_$'
 logged_channels = {}
 message_dict = {}
 
 slash = SlashCommand(client, sync_commands=True)
-voice_channel_id = None
 text_channel_id = None
+verbosity = False
 
 with open('notifications.json') as json_file:
     message_dict = json.load(json_file)
@@ -28,18 +29,27 @@ def generate_message(message_type, member_name):
 
 # Bot Functions #
 @slash.slash(description="Set the voice channel to monitor and the text channel to send messages to")
-async def set_voice(ctx, voice_channel_name, text_channel_name):
-    global voice_channel_id, text_channel_id
+async def set_channels(ctx, text_channel_name):
+    global text_channel_id
     try:
-        voice_channel = discord.utils.get(ctx.guild.channels, name=voice_channel_name)
-        voice_channel_id = voice_channel.id
-        await ctx.send(f"Voice chat tracking has been set to the **{voice_channel}** voice chat")
-        
         text_channel = discord.utils.get(ctx.guild.channels, name=text_channel_name)
         text_channel_id = text_channel.id
         await ctx.send(f"The text channel has been set to the **{text_channel}** text chat")
     except:
-        await ctx.send(f"{voice_channel_name} channel was not found.")
+        await ctx.send(f"{text_channel_name} channel was not found.")
+
+@slash.slash(description="The verbosity toggle: type 'y' if you want every voice chat change announced, type 'n' otherwise.")
+async def verbosity(ctx, verbosity_state):
+    global verbosity
+
+    if (verbosity_state.lower() == "y"):
+        verbosity = True
+        await ctx.send(f"Verbosity has been turned on")
+    elif (verbosity_state.lower() == "n"):
+        verbosity = False
+        await ctx.send(f"Verbosity has been turned off")
+    else:
+        await ctx.send(f"Please read the command description correctly.")
 
 @client.event
 async def on_ready():
@@ -54,13 +64,19 @@ async def on_message(message):
 
 @client.event
 async def on_voice_state_update(member, before, after):
-    global logged_channels, voice_channel_id, text_channel_id
+    global logged_channels, text_channel_id
 
-    if (not voice_channel_id or not text_channel_id):
+    voice_channel = None
+
+    if (before.channel is not None):
+        voice_channel = client.get_channel(before.channel.id)
+    elif (after.channel is not None):
+        voice_channel = client.get_channel(after.channel.id)
+
+    if (not text_channel_id):
         return
 
-    voice_channel_text = client.get_channel(text_channel_id) # Fix later on, find out how to make this set by the user.
-    voice_channel = client.get_channel(voice_channel_id)
+    voice_channel_text = client.get_channel(text_channel_id)
 
     curr_embed = discord.Embed(
         title=f"Update to the {after.channel} channel",
@@ -118,11 +134,11 @@ async def on_voice_state_update(member, before, after):
             curr_embed.colour = discord.Colour.red()
             logged_channels[before.channel.id]['events_steps'].append(f"`{get_curr_time()}` ├ {curr_embed.description}")            
 
-    # await voice_channel_text.send(embed=curr_embed)
+    if (verbosity):
+        await voice_channel_text.send(embed=curr_embed)
 
     # If no one is in the voice channel... 
     if (len(voice_channel.members) == 0):
-        print("Made it here.")
         elapsed_epoch = time.gmtime(time.time()-logged_channels[before.channel.id]['start_time'])
         elapsed_time = time.strftime("%H:%M:%S", elapsed_epoch)
         str_builder = "The conversation lasted `" + elapsed_time + "`\n" + '\n'.join(logged_channels[before.channel.id]['events_steps'])
@@ -132,7 +148,7 @@ async def on_voice_state_update(member, before, after):
             description = str_builder
         )
 
-        logged_channels[before.channel] = {}
+        del logged_channels[before.channel]
         await voice_channel_text.send(embed = new_embed)
 
-client.run(os.environ.get('DISCORD_TOKEN'))
+client.run(secrets["DISCORD_TOKEN"])
