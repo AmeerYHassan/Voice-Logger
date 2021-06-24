@@ -1,0 +1,49 @@
+{
+    "user_joined":{
+        "message": "{member} joined the conversation.",
+        "emoji": ":arrow_forward:",
+        "colour": "green"
+    },
+
+    "user_left":{
+        "message": "{member} left the conversation",
+        "emoji": ":arrow_backward:",
+        "colour": "red"
+    },
+
+    "user_muted":{
+        "message": "{member} muted themselves.",
+        "emoji": ":no_mouth:",
+        "colour": "red"
+    },
+
+    "user_unmuted":{
+        "message": "{member} unmuted themselves.",
+        "emoji": ":lips:",
+        "colour": "green"
+    },
+
+    "user_deafened":{
+        "message": "{member} deafened themselves.",
+        "emoji": ":deaf_man:",
+        "colour": "red"
+    },
+
+    "user_undeafened":{
+        "message": "{member} undeafened themselves.",
+        "emoji": ":ear:",
+        "colour": "green"
+    },
+
+    "user_started_streaming":{
+        "message": "{member} started streaming.",
+        "emoji": ":tv:",
+        "colour": "green"
+    },
+
+    "user_stopped_streaming":{
+        "message": "{member} stopped streaming.",
+        "emoji": ":stop_sign:",
+        "colour": "red"
+    }
+}
